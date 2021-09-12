@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script type="text/javascript"
+          src="https://webapi.amap.com/maps?v=1.4.15&key=fcf51b643e722ea69e727d35606476c5"></script>
+  <script src='./js/hangzhou.js'></script>
+  <script src='./js/suzhou.js'></script>
+  <script src='./js/shanghai.js'></script>
+  <script src='./js/nanjing.js'></script>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #container {
+      width: 3200px;
+      height: 2400px;
+    }
+
+    #board {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 47192.168.199.109 0px;
+      background-color: #fff;
+      z-index: 1000;
+      border: 1px solid red;
+    }
+
+    #images {
+      position: relative;
+      width: 100;
+      height: 300px;
+    }
+
+    #images>img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+  <div id="board">
+    <p>城市
+      <select onchange="changeCity()">
+        <option value="shanghai">上海</option>
+        <option value="hangzhou">杭州</option>
+        <option value="suzhou">苏州</option>
+        <option value="nanjing">南京</option>
+      </select>
+    </p>
+    <p>marker尺寸 <input type="number" value="6" onchange="changeMarkerSize(event)" />像素</p>
+    <p>缩放程度 <input type="number" value="12" onchange="changeScale(event)" /></p>
+    <div>
+      <button onclick="draw()">重新渲染</button>
+      <button onclick="save()">保存</button>
+    </div>
+    <div id="images">
+      <img id="image1" src="" alt="">
+      <img id="image0" src="" alt="">
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    let city = 'shanghai';
+    let markerSize = 6;
+    let scale = 12;
+
+    const dataURLtoBlob = (dataURL) => {
+      const array = dataURL.split(',');
+      const mime = array[0].match(/:(.*?);/)[1];
+      const string = atob(array[1]);
+      let { length } = string;
+      const uint8Array = new Uint8Array(length);
+      while (length--) {
+        uint8Array[length] = string.charCodeAt(length);
+      }
+      return new Blob([uint8Array], { type: mime });
+    }
+
+    const pointMap = {
+      shanghai: [121.43348, 31.18334],
+      hangzhou: [120.153576, 30.287459],
+      suzhou: [120.619585, 31.299379],
+      nanjing: [118.78, 32.07],
+    }
+
+    const changeCity = () => {
+      document.querySelectorAll('option').forEach(option => {
+        if (option.selected) {
+          city = option.value
+        }
+      })
+    }
+
+    const changeMarkerSize = ({ target }) => {
+      markerSize = parseInt(target.value);
+    }
+    const changeScale = ({ target }) => {
+      scale = parseInt(target.value);
+    }
+
+    const map = new AMap.Map('container', { showLabel: false });
+    map.setMapStyle('amap://styles/grey');
+
+    const draw = () => {
+      const container = document.querySelector('#container');
+
+      map.clearMap();
+      map.setCenter(pointMap[city]);
+      map.setZoom(scale);
+
+      window[city].forEach(({ coordinates }, index) => {
+        const circleMarker = new AMap.CircleMarker({
+          center: [coordinates.longitude, coordinates.latitude],
+          radius: markerSize,
+          strokeWeight: 0,
+          strokeOpacity: 0,
+          fillColor: 'rgba(255,255,255,1)',
+          fillOpacity: 1,
+          zIndex: 10,
+        })
+        circleMarker.setMap(map);
+      });
+
+      // alert(`渲染完成，共${window[city].length}家店`);
+    }
+
+    const save = () => {
+      draw();
+
+      Array.from(document.querySelectorAll('canvas')).forEach((canvas, index) => {
+        const dataURL = canvas.toDataURL('image/png');
+        document.querySelector(`#image${index}`).src = dataURL;
+        const blob = dataURLtoBlob(dataURL);
+        const objectURL = URL.createObjectURL(blob);
+        const alink = document.createElement('a');
+        alink.href = objectURL;
+        alink.download = `星巴克分布${city}${index}`;
+        alink.click();
+      });
+    }
+
+    draw()
+  </script>
+</body>
+
+</html>
