@@ -12,6 +12,8 @@
   <script src='./js/suzhou.js'></script>
   <script src='./js/shanghai.js'></script>
   <script src='./js/nanjing.js'></script>
+  <script src='./js/wuxi.js'></script>
+  <script src='./js/ningbo.js'></script>
   <style>
     body {
       margin: 0;
@@ -59,6 +61,8 @@
         <option value="hangzhou">杭州</option>
         <option value="suzhou">苏州</option>
         <option value="nanjing">南京</option>
+        <option value="wuxi">无锡</option>
+        <option value="ningbo">宁波</option>
       </select>
     </p>
     <p>marker尺寸 <input type="number" value="6" onchange="changeMarkerSize(event)" />像素</p>
@@ -95,6 +99,8 @@
       hangzhou: [120.153576, 30.287459],
       suzhou: [120.619585, 31.299379],
       nanjing: [118.78, 32.07],
+      wuxi: [120.301663, 31.574729],
+      ningbo: [121.549792, 29.868388],
     }
 
     const changeCity = () => {
