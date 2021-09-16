@@ -14,6 +14,14 @@
   <script src='./js/nanjing.js'></script>
   <script src='./js/wuxi.js'></script>
   <script src='./js/ningbo.js'></script>
+  <script src='./js/beijing.js'></script>
+  <script src='./js/tianjin.js'></script>
+  <script src='./js/guangzhou.js'></script>
+  <script src='./js/shenzhen.js'></script>
+  <script src='./js/chengdu.js'></script>
+  <script src='./js/chongqing.js'></script>
+  <script src='./js/wuhan.js'></script>
+  <script src='./js/xian.js'></script>
   <style>
     body {
       margin: 0;
@@ -63,6 +71,14 @@
         <option value="nanjing">南京</option>
         <option value="wuxi">无锡</option>
         <option value="ningbo">宁波</option>
+        <option value="beijing">北京</option>
+        <option value="tianjin">天津</option>
+        <option value="guangzhou">广州</option>
+        <option value="shenzhen">深圳</option>
+        <option value="chengdu">成都</option>
+        <option value="chongqing">重庆</option>
+        <option value="wuhan">武汉</option>
+        <option value="xian">西安</option>
       </select>
     </p>
     <p>marker尺寸 <input type="number" value="6" onchange="changeMarkerSize(event)" />像素</p>
@@ -101,6 +117,14 @@
       nanjing: [118.78, 32.07],
       wuxi: [120.301663, 31.574729],
       ningbo: [121.549792, 29.868388],
+      beijing: [116.38974, 39.910919],
+      tianjin: [117.429698, 39.244461],
+      guangzhou: [113.280637, 23.125178],
+      shenzhen: [114.085947, 22.547],
+      chengdu: [104.065735, 30.659462],
+      chongqing: [106.504962, 29.533155],
+      wuhan: [114.298572, 30.584355],
+      xian: [108.948024, 34.263161],
     }
 
     const changeCity = () => {
@@ -141,12 +165,10 @@
         circleMarker.setMap(map);
       });
 
-      // alert(`渲染完成，共${window[city].length}家店`);
+      alert(`渲染完成，共${window[city].length}家店`);
     }
 
     const save = () => {
-      draw();
-
       Array.from(document.querySelectorAll('canvas')).forEach((canvas, index) => {
         const dataURL = canvas.toDataURL('image/png');
         document.querySelector(`#image${index}`).src = dataURL;
