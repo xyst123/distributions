@@ -83,10 +83,13 @@
     </p>
     <p>marker尺寸 <input type="number" value="6" onchange="changeMarkerSize(event)" />像素</p>
     <p>缩放程度 <input type="number" value="12" onchange="changeScale(event)" /></p>
+    <p>中心点经度 <input id="lng" type="number" value="121.43348" onchange="changeLng(event)" /></p>
+    <p>中心点纬度 <input id="lat" type="number" value="31.18334" onchange="changeLat(event)" /></p>
     <div>
       <button onclick="draw()">重新渲染</button>
       <button onclick="save()">保存</button>
     </div>
+    <p id="text"></p>
     <div id="images">
       <img id="image1" src="" alt="">
       <img id="image0" src="" alt="">
@@ -97,6 +100,9 @@
     let city = 'shanghai';
     let markerSize = 6;
     let scale = 12;
+    let lat = 31.18334;
+    let lng = 121.43348
+    const dataURLs = [];
 
     const dataURLtoBlob = (dataURL) => {
       const array = dataURL.split(',');
@@ -108,6 +114,10 @@
         uint8Array[length] = string.charCodeAt(length);
       }
       return new Blob([uint8Array], { type: mime });
+    }
+
+    const setText = (text) => {
+      document.querySelector('#text').innerHTML = text;
     }
 
     const pointMap = {
@@ -130,7 +140,11 @@
     const changeCity = () => {
       document.querySelectorAll('option').forEach(option => {
         if (option.selected) {
-          city = option.value
+          city = option.value;
+          lng = pointMap[city][0];
+          lat = pointMap[city][1];
+          document.querySelector('#lng').value = lng;
+          document.querySelector('#lat').value = lat;
         }
       })
     }
@@ -142,14 +156,25 @@
       scale = parseInt(target.value);
     }
 
+    const changeLng = ({ target }) => {
+      lng = Number(target.value)
+    }
+
+    const changeLat = ({ target }) => {
+      lat = Number(target.value)
+    }
+
     const map = new AMap.Map('container', { showLabel: false });
     map.setMapStyle('amap://styles/grey');
 
     const draw = () => {
+      setText('渲染中。。。');
+      document.querySelector(`#image0`).src = '';
+      document.querySelector(`#image1`).src = '';
       const container = document.querySelector('#container');
 
       map.clearMap();
-      map.setCenter(pointMap[city]);
+      map.setCenter([lng, lat]);
       map.setZoom(scale);
 
       window[city].forEach(({ coordinates }, index) => {
@@ -165,20 +190,25 @@
         circleMarker.setMap(map);
       });
 
-      alert(`渲染完成，共${window[city].length}家店`);
+      setTimeout(() => {
+        Array.from(document.querySelectorAll('canvas')).forEach((canvas, index) => {
+          const dataURL = canvas.toDataURL('image/png');
+          dataURLs[index] = dataURL;
+          document.querySelector(`#image${index}`).src = dataURL;
+        });
+        setText(`已渲染完成，共${window[city].length}家店`)
+      }, 3000)
     }
 
     const save = () => {
-      Array.from(document.querySelectorAll('canvas')).forEach((canvas, index) => {
-        const dataURL = canvas.toDataURL('image/png');
-        document.querySelector(`#image${index}`).src = dataURL;
+      dataURLs.forEach((dataURL, index) => {
         const blob = dataURLtoBlob(dataURL);
         const objectURL = URL.createObjectURL(blob);
         const alink = document.createElement('a');
         alink.href = objectURL;
         alink.download = `星巴克分布${city}${index}`;
         alink.click();
-      });
+      })
     }
 
     draw()
