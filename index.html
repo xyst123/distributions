@@ -75,6 +75,7 @@
     let lat = 31.18334;
     let lng = 121.43348;
     let data = [];
+    let map = null;
     const dataURLs = [];
 
     const dataURLtoBlob = (dataURL) => {
@@ -146,10 +147,19 @@
       }
     }
 
-    const map = new AMap.Map('container', { showLabel: false });
-    map.setMapStyle('amap://styles/grey');
-
     const draw = () => {
+      map && map.destroy();
+      map = new AMap.Map('container', { showLabel: false });
+      map.setMapStyle('amap://styles/grey');
+      map.on('complete', function () {
+        Array.from(document.querySelectorAll('canvas')).forEach((canvas, index) => {
+          const dataURL = canvas.toDataURL('image/png');
+          dataURLs[index] = dataURL;
+          document.querySelector(`#image${index}`).src = dataURL;
+        });
+        setText(`已渲染完成，共${data.length}家店`)
+      });
+
       setText('渲染中。。。');
       document.querySelector(`#image0`).src = '';
       document.querySelector(`#image1`).src = '';
@@ -172,15 +182,6 @@
         })
         circleMarker.setMap(map);
       });
-
-      setTimeout(() => {
-        Array.from(document.querySelectorAll('canvas')).forEach((canvas, index) => {
-          const dataURL = canvas.toDataURL('image/png');
-          dataURLs[index] = dataURL;
-          document.querySelector(`#image${index}`).src = dataURL;
-        });
-        setText(`已渲染完成，共${data.length}家店`)
-      }, 3000)
     }
 
     const save = () => {
