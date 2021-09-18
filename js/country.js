@@ -5932,7 +5932,7 @@ window.country = {
           provCode: 22e4,
           level: "city",
           center: [126.55302, 43.843577],
-          name: "吉林",
+          name: "吉林市",
           children: [{
               adcode: 220202,
               provCode: 22e4,
