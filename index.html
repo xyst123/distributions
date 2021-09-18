@@ -180,7 +180,7 @@
     const changeData = ({ target }) => {
       const string = target.value;
       data = JSON.parse(string).data.filter((item) => {
-        return item.address.streetAddressLine1.includes(city) || item.address.streetAddressLine3.includes(city);
+        return item.address.streetAddressLine1.includes(city);
       })
     }
 
