@@ -148,6 +148,9 @@
     }
 
     const draw = () => {
+      setText('渲染中。。。');
+      document.querySelector(`#image0`).src = '';
+      document.querySelector(`#image1`).src = '';
       map && map.destroy();
       map = new AMap.Map('container', { showLabel: false });
       map.setMapStyle('amap://styles/grey');
@@ -159,10 +162,6 @@
         });
         setText(`已渲染完成，共${data.length}家店`)
       });
-
-      setText('渲染中。。。');
-      document.querySelector(`#image0`).src = '';
-      document.querySelector(`#image1`).src = '';
       getData();
       const container = document.querySelector('#container');
 
@@ -193,6 +192,19 @@
         alink.download = `星巴克分布${city}${index}`;
         alink.click();
       })
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 3200;
+      canvas.height = 2400;
+      ctx.drawImage(document.querySelector(`#image1`), 0, 0, 3200, 2400);
+      ctx.drawImage(document.querySelector(`#image0`), 0, 0, 3200, 2400);
+      const blob = dataURLtoBlob(canvas.toDataURL());
+      const objectURL = URL.createObjectURL(blob);
+      const alink = document.createElement('a');
+      alink.href = objectURL;
+      alink.download = `星巴克分布${city}`;
+      alink.click();
     }
 
     draw()
