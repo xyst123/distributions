@@ -8,20 +8,8 @@
   <title>Document</title>
   <script type="text/javascript"
           src="https://webapi.amap.com/maps?v=1.4.15&key=fcf51b643e722ea69e727d35606476c5"></script>
-  <script src='./js/hangzhou.js'></script>
-  <script src='./js/suzhou.js'></script>
-  <script src='./js/shanghai.js'></script>
-  <script src='./js/nanjing.js'></script>
-  <script src='./js/wuxi.js'></script>
-  <script src='./js/ningbo.js'></script>
-  <script src='./js/beijing.js'></script>
-  <script src='./js/tianjin.js'></script>
-  <script src='./js/guangzhou.js'></script>
-  <script src='./js/shenzhen.js'></script>
-  <script src='./js/chengdu.js'></script>
-  <script src='./js/chongqing.js'></script>
-  <script src='./js/wuhan.js'></script>
-  <script src='./js/xian.js'></script>
+  <script src='./js/country.js'></script>
+
   <style>
     body {
       margin: 0;
@@ -63,24 +51,14 @@
 <body>
   <div id="container"></div>
   <div id="board">
+    <h4>1.输入城市，获取数据</h4>
     <p>城市
-      <select onchange="changeCity()">
-        <option value="shanghai">上海</option>
-        <option value="hangzhou">杭州</option>
-        <option value="suzhou">苏州</option>
-        <option value="nanjing">南京</option>
-        <option value="wuxi">无锡</option>
-        <option value="ningbo">宁波</option>
-        <option value="beijing">北京</option>
-        <option value="tianjin">天津</option>
-        <option value="guangzhou">广州</option>
-        <option value="shenzhen">深圳</option>
-        <option value="chengdu">成都</option>
-        <option value="chongqing">重庆</option>
-        <option value="wuhan">武汉</option>
-        <option value="xian">西安</option>
-      </select>
+      <input type="text" value="上海" onchange="changeCity(event)" />
+      <button onclick="getData()">获取数据</button>
     </p>
+    <h4>2.粘贴城市门店数据</h4>
+    <textarea name="" id="" cols="30" rows="10" onchange="changeData(event)"></textarea>
+    <h4>3.调整参数</h4>
     <p>marker尺寸 <input type="number" value="6" onchange="changeMarkerSize(event)" />像素</p>
     <p>缩放程度 <input type="number" value="12" onchange="changeScale(event)" /></p>
     <p>中心点经度 <input id="lng" type="number" value="121.43348" onchange="changeLng(event)" /></p>
@@ -91,17 +69,18 @@
     </div>
     <p id="text"></p>
     <div id="images">
-      <img id="image1" src="" alt="">
+      <img id="image1" style="z-index: 1;" src="" alt="">
       <img id="image0" src="" alt="">
     </div>
   </div>
 
   <script type="text/javascript">
-    let city = 'shanghai';
+    let city = '上海';
     let markerSize = 6;
     let scale = 12;
     let lat = 31.18334;
-    let lng = 121.43348
+    let lng = 121.43348;
+    let data = [];
     const dataURLs = [];
 
     const dataURLtoBlob = (dataURL) => {
@@ -137,16 +116,8 @@
       xian: [108.948024, 34.263161],
     }
 
-    const changeCity = () => {
-      document.querySelectorAll('option').forEach(option => {
-        if (option.selected) {
-          city = option.value;
-          lng = pointMap[city][0];
-          lat = pointMap[city][1];
-          document.querySelector('#lng').value = lng;
-          document.querySelector('#lat').value = lat;
-        }
-      })
+    const changeCity = ({ target }) => {
+      city = target.value
     }
 
     const changeMarkerSize = ({ target }) => {
@@ -164,6 +135,55 @@
       lat = Number(target.value)
     }
 
+    const getCityData = (data, target) => {
+      if (data.name === target) return data;
+      if (data.children?.length > 0) {
+        for (const child of data.children) {
+          if (getCityData(child, target)) {
+            return child
+          }
+        }
+      }
+      return null
+    }
+
+    const getData = () => {
+      const map = {
+        'country': {},
+        'province': {
+          limit: 4000,
+          radius: 2000000
+        },
+        'city': {
+          limit: 2000,
+          radius: 200000
+        },
+        district: {
+          limit: 2000,
+          radius: 200000
+        },
+      }
+      const cityData = getCityData(window.country, city);
+      if (cityData) {
+        const { level, center } = cityData;
+        const { limit, radius } = map[level];
+        lat = center[1];
+        lng = center[0];
+        document.querySelector('#lng').value = lng;
+        document.querySelector('#lat').value = lat;
+        window.open(`https://www.starbucks.com.cn/api/stores/nearby?lat=${lat}&lon=${lng}&limit=${limit}&locale=ZH&features=&radius=${radius}`);
+      } else {
+        alert('城市不存在，请添加或去掉“省”、“市”、“区”、“县”后重新获取数据')
+      }
+    }
+
+    const changeData = ({ target }) => {
+      const string = target.value;
+      data = JSON.parse(string).data.filter((item) => {
+        return item.address.streetAddressLine1.includes(city) || item.address.streetAddressLine3.includes(city);
+      })
+    }
+
     const map = new AMap.Map('container', { showLabel: false });
     map.setMapStyle('amap://styles/grey');
 
@@ -177,7 +197,7 @@
       map.setCenter([lng, lat]);
       map.setZoom(scale);
 
-      window[city].forEach(({ coordinates }, index) => {
+      data.forEach(({ coordinates }, index) => {
         const circleMarker = new AMap.CircleMarker({
           center: [coordinates.longitude, coordinates.latitude],
           radius: markerSize,
@@ -196,7 +216,7 @@
           dataURLs[index] = dataURL;
           document.querySelector(`#image${index}`).src = dataURL;
         });
-        setText(`已渲染完成，共${window[city].length}家店`)
+        setText(`已渲染完成，共${data.length}家店`)
       }, 3000)
     }
 
