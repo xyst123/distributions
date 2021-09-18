@@ -94,6 +94,19 @@
       document.querySelector('#text').innerHTML = text;
     }
 
+    const getCityData = (data, target) => {
+      if (data.name === target) return data;
+      if (data.children?.length > 0) {
+        for (const child of data.children) {
+          const result = getCityData(child, target);
+          if (result) {
+            return result
+          }
+        }
+      }
+      return null
+    }
+
     const getData = () => {
       const cityData = getCityData(window.country, city);
       if (cityData) {
@@ -135,19 +148,6 @@
 
     const changeLat = ({ target }) => {
       lat = Number(target.value)
-    }
-
-    const getCityData = (data, target) => {
-      if (data.name === target) return data;
-      if (data.children?.length > 0) {
-        for (const child of data.children) {
-          const result = getCityData(child, target);
-          if (result) {
-            return result
-          }
-        }
-      }
-      return null
     }
 
     const draw = () => {
