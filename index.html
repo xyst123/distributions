@@ -94,8 +94,30 @@
       document.querySelector('#text').innerHTML = text;
     }
 
+    const getData = () => {
+      const cityData = getCityData(window.country, city);
+      if (cityData) {
+        let { name, center } = cityData;
+        if (['北京', '上海', '天津', '重庆'].includes(name)) {
+          level = 'city'
+        }
+        lat = center[1];
+        lng = center[0];
+        document.querySelector('#lng').value = lng;
+        document.querySelector('#lat').value = lat;
+        if (name === '全国') {
+          data = window.all;
+        } else {
+          data = window.all.filter(item => item.city.includes(city))
+        }
+      } else {
+        alert('城市不存在，请添加或去掉“省”、“市”、“区”、“县”后重新获取数据')
+      }
+    }
+
     const changeCity = ({ target }) => {
-      city = target.value
+      city = target.value;
+      getData();
     }
 
     const changeMarkerSize = ({ target }) => {
@@ -126,27 +148,6 @@
       return null
     }
 
-    const getData = () => {
-      const cityData = getCityData(window.country, city);
-      if (cityData) {
-        let { name, center } = cityData;
-        if (['北京', '上海', '天津', '重庆'].includes(name)) {
-          level = 'city'
-        }
-        lat = center[1];
-        lng = center[0];
-        document.querySelector('#lng').value = lng;
-        document.querySelector('#lat').value = lat;
-        if (name === '全国') {
-          data = window.all;
-        } else {
-          data = window.all.filter(item => item.city.includes(city))
-        }
-      } else {
-        alert('城市不存在，请添加或去掉“省”、“市”、“区”、“县”后重新获取数据')
-      }
-    }
-
     const draw = () => {
       setText('渲染中。。。');
       document.querySelector(`#image0`).src = '';
@@ -162,7 +163,6 @@
         });
         setText(`已渲染完成，共${data.length}家店`)
       });
-      getData();
       const container = document.querySelector('#container');
 
       map.clearMap();
