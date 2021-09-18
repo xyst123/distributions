@@ -139,8 +139,9 @@
       if (data.name === target) return data;
       if (data.children?.length > 0) {
         for (const child of data.children) {
-          if (getCityData(child, target)) {
-            return child
+          const result = getCityData(child, target);
+          if (result) {
+            return result
           }
         }
       }
@@ -149,7 +150,6 @@
 
     const getData = () => {
       const map = {
-        'country': {},
         'province': {
           limit: 4000,
           radius: 2000000
@@ -158,12 +158,13 @@
           limit: 2000,
           radius: 200000
         },
-        district: {
+        'district': {
           limit: 2000,
           radius: 200000
         },
       }
       const cityData = getCityData(window.country, city);
+      console.log(cityData)
       if (cityData) {
         let { name, level, center } = cityData;
         if (['北京', '上海', '天津', '重庆'].includes(name)) {
