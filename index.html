@@ -75,7 +75,7 @@
     let lat = 31.18334;
     let lng = 121.43348;
     let map = null;
-    let data = getData();;
+    let data = [];
     const dataURLs = [];
 
     const dataURLtoBlob = (dataURL) => {
@@ -114,6 +114,8 @@
         alert('城市不存在，请添加或去掉“省”、“市”、“区”、“县”后重新获取数据')
       }
     }
+
+    getData();
 
     const changeCity = ({ target }) => {
       city = target.value;
