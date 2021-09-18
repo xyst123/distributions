@@ -165,7 +165,10 @@
       }
       const cityData = getCityData(window.country, city);
       if (cityData) {
-        const { level, center } = cityData;
+        let { name, level, center } = cityData;
+        if (['北京', '上海', '天津', '重庆'].includes(name)) {
+          level = 'city'
+        }
         const { limit, radius } = map[level];
         lat = center[1];
         lng = center[0];
@@ -177,11 +180,15 @@
       }
     }
 
-    const changeData = ({ target }) => {
-      const string = target.value;
-      data = JSON.parse(string).data.filter((item) => {
+    window.setData = (object) => {
+      data = object.data.filter((item) => {
         return item.address.streetAddressLine1.includes(city);
       })
+    }
+
+    const changeData = ({ target }) => {
+      const string = target.value;
+      window.setData(JSON.parse(string));
     }
 
     const map = new AMap.Map('container', { showLabel: false });
