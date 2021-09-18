@@ -1,7 +1,7 @@
 window.country = {
   adcode: 1e5,
   level: "country",
-  center: [116.3683244, 39.915085],
+  center: [125.151424, 42.920415],
   name: "全国",
   children: [{
       adcode: 11e4,
