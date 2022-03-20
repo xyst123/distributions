@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>底图</title>
+  <script type="text/javascript"
+          src="https://webapi.amap.com/maps?v=1.4.15&key=fcf51b643e722ea69e727d35606476c5"></script>
+  <script src="./js/draw.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #container {
+      width: 5760px;
+      height: 2907px;
+    }
+
+    #board {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 400px;
+      background-color: #fff;
+      z-index: 1000;
+      border: 1px solid red;
+    }
+
+    img {
+      width: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+  <div id="board">
+    <p><a href="https://geohub.amap.com/mapstyle/edit?styleid=2a9528a4cd2d81070649047a8d36fa8d"
+         target="_blank">编辑地图样式</a></p>
+    <p>保存每一张小图 <input id="save" type="checkbox" name="save"></p>
+    <p>二维坐标系，原点在左下角，横向X [0, 14]，纵向Y [0, 31]</p>
+    <p>从 X <input type="number" value="0" onchange="changeXStart(event)" /> Y <input type="number" value="0"
+             onchange="changeYStart(event)" /></p>
+    <p>到 X <input type="number" value="2" onchange="changeXEnd(event)" /> Y <input type="number" value="2"
+             onchange="changeYEnd(event)" /></p>
+    <div>
+      <button onclick="drawAll()">开始绘制大图</button>
+    </div>
+    <img id="image" src="" alt="">
+  </div>
+  <script>
+    let map = null;
+    let scale = 18;
+    const xSize = 5760;
+    const ySize = 2907;
+    const lngStep = 0.030918;
+    const latStep = 0.01344
+    const position1 = {
+      lat: 30.076375,
+      lng: 119.975477
+    }
+    const position2 = {
+      lat: 30.508295,
+      lng: 120.442053
+    }
+
+    let saveEach = false;
+    let xStart = 0;
+    let xEnd = 2;
+    let yStart = 0;
+    let yEnd = 2;
+    const changeXStart = ({ target }) => {
+      xStart = parseInt(target.value);
+    }
+    const changeXEnd = ({ target }) => {
+      xEnd = parseInt(target.value);
+    }
+    const changeYStart = ({ target }) => {
+      yStart = parseInt(target.value);
+    }
+    const changeYEnd = ({ target }) => {
+      yEnd = parseInt(target.value);
+    }
+
+    // 按左下角算
+    const drawIndex = (ctx, i = 0, j = 0) => {
+      map && map.destroy();
+      map = new AMap.Map('container', { showLabel: false });
+      map.setMapStyle('amap://styles/2a9528a4cd2d81070649047a8d36fa8d');
+      let handler = Function.prototype;
+      map.on('complete', function () {
+        const mapCanvas = document.querySelector('canvas');
+        const dataURL = mapCanvas.toDataURL('image/png');
+        if (document.querySelector('#save').checked) {
+          saveImage(dataURL, `${xStart + i}-${yStart + j}`)
+        }
+        const image = new Image();
+        image.setAttribute('crossorigin', 'anonymous');
+        image.onload = () => {
+          ctx.drawImage(image, i * xSize, (yEnd - yStart - j) * ySize, xSize, ySize);
+          setTimeout(() => { handler(true) }, 1000);
+        }
+        Object.assign(image, {
+          src: dataURL,
+        })
+      });
+      map.clearMap();
+      map.setCenter([position1.lng + (i + 0.5) * lngStep, position1.lat + (j + 0.5) * latStep]);
+      map.setZoom(scale);
+      return Promise.race([new Promise((resolve) => {
+        handler = resolve;
+      }), delay(10000)])
+    }
+
+    const drawAll = async () => {
+      alert(`横向${xEnd - xStart + 1}，纵向${yEnd - yStart + 1}`);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      Object.assign(canvas, {
+        width: xSize * (xEnd - xStart + 1),
+        height: ySize * (yEnd - yStart + 1)
+      })
+      for (let i = xStart; i < xEnd + 1; i++) {
+        for (let j = yStart; j < yEnd + 1; j++) {
+          const result = await drawIndex(ctx, i - xStart, j - yStart);
+          if (!result) {
+            alert(`${i}-${j}绘制失败`);
+            return;
+          }
+        }
+      }
+      saveImage(canvas.toDataURL('image/png'), '全景图')
+    }
+  </script>
+</body>
+
+</html>

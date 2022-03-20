@@ -5,9 +5,10 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>星巴克分布</title>
   <script type="text/javascript"
           src="https://webapi.amap.com/maps?v=1.4.15&key=fcf51b643e722ea69e727d35606476c5"></script>
+  <script src="./js/draw.js"></script>
   <script src='./js/country.js'></script>
   <script src='./js/all.js'></script>
 
@@ -26,7 +27,6 @@
       top: 0;
       left: 0;
       width: 400px;
-      height: 47192.168.199.109 0px;
       background-color: #fff;
       z-index: 1000;
       border: 1px solid red;
@@ -34,8 +34,7 @@
 
     #images {
       position: relative;
-      width: 100;
-      height: 300px;
+      width: 100%;
     }
 
     #images>img {
@@ -77,18 +76,6 @@
     let map = null;
     let data = [];
     const dataURLs = [];
-
-    const dataURLtoBlob = (dataURL) => {
-      const array = dataURL.split(',');
-      const mime = array[0].match(/:(.*?);/)[1];
-      const string = atob(array[1]);
-      let { length } = string;
-      const uint8Array = new Uint8Array(length);
-      while (length--) {
-        uint8Array[length] = string.charCodeAt(length);
-      }
-      return new Blob([uint8Array], { type: mime });
-    }
 
     const setText = (text) => {
       document.querySelector('#text').innerHTML = text;
