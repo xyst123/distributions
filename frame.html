@@ -43,10 +43,10 @@
     <p><a href="https://geohub.amap.com/mapstyle/edit?styleid=2a9528a4cd2d81070649047a8d36fa8d"
          target="_blank">编辑地图样式</a></p>
     <p>保存每一张小图 <input id="save" type="checkbox" name="save"></p>
-    <p>二维坐标系，原点在左下角，横向X [0, 14]，纵向Y [0, 31]</p>
+    <p>二维坐标系，原点在左下角，横向X [0, 3]，纵向Y [0, 7]</p>
     <p>从 X <input type="number" value="0" onchange="changeXStart(event)" /> Y <input type="number" value="0"
              onchange="changeYStart(event)" /></p>
-    <p>到 X <input type="number" value="2" onchange="changeXEnd(event)" /> Y <input type="number" value="2"
+    <p>到 X <input type="number" value="3" onchange="changeXEnd(event)" /> Y <input type="number" value="7"
              onchange="changeYEnd(event)" /></p>
     <div>
       <button onclick="drawAll()">开始绘制大图</button>
@@ -55,11 +55,12 @@
   </div>
   <script>
     let map = null;
-    let scale = 18;
+    // scale + 1，清晰度翻倍
+    let scale = 16;
     const xSize = 5760;
     const ySize = 2907;
-    const lngStep = 0.030918;
-    const latStep = 0.01344
+    const lngStep = 0.123672;
+    const latStep = 0.05376;
     const position1 = {
       lat: 30.076375,
       lng: 119.975477
@@ -71,9 +72,9 @@
 
     let saveEach = false;
     let xStart = 0;
-    let xEnd = 2;
+    let xEnd = 3;
     let yStart = 0;
-    let yEnd = 2;
+    let yEnd = 7;
     const changeXStart = ({ target }) => {
       xStart = parseInt(target.value);
     }
@@ -91,7 +92,7 @@
     const drawIndex = (ctx, i = 0, j = 0) => {
       map && map.destroy();
       map = new AMap.Map('container', { showLabel: false });
-      map.setMapStyle('amap://styles/2a9528a4cd2d81070649047a8d36fa8d');
+      map.setMapStyle('amap://styles/f40f08176da08658aab56aab8d3fee58');
       let handler = Function.prototype;
       map.on('complete', function () {
         const mapCanvas = document.querySelector('canvas');
@@ -102,7 +103,7 @@
         const image = new Image();
         image.setAttribute('crossorigin', 'anonymous');
         image.onload = () => {
-          ctx.drawImage(image, i * xSize, (yEnd - yStart - j) * ySize, xSize, ySize);
+          ctx.drawImage(image, (i - xStart) * xSize, (yEnd - j) * ySize, xSize, ySize);
           setTimeout(() => { handler(true) }, 1000);
         }
         Object.assign(image, {
@@ -127,7 +128,7 @@
       })
       for (let i = xStart; i < xEnd + 1; i++) {
         for (let j = yStart; j < yEnd + 1; j++) {
-          const result = await drawIndex(ctx, i - xStart, j - yStart);
+          const result = await drawIndex(ctx, i, j);
           if (!result) {
             alert(`${i}-${j}绘制失败`);
             return;

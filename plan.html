@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width">
   <title>控规图</title>
   <style>
     #container {
@@ -20,18 +20,24 @@
   <button onclick="save()">保存</button>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
+    const scale = 3;
+    const baseStep = 3597.3176436740905;
+    const baseCount = 15;
+    const baseInitial = 8;
     const allX1 = 13323814.83741736;
     const allY1 = 3481248.01622007;
-    const step = 3597.3176436740905;
+    const step = baseStep / scale;
+    const count = baseCount * scale;
+    const initial = baseInitial * scale;
     const size = 200;
     const canvas = document.querySelector('canvas');
     Object.assign(canvas, {
-      width: 15 * size,
-      height: 15 * size
+      width: count * size,
+      height: count * size
     })
     Object.assign(canvas.style, {
-      width: `${15 * size}px`,
-      height: `${15 * size}px`
+      width: `${count * size}px`,
+      height: `${count * size}px`
     })
     const ctx = canvas.getContext('2d');
     const addImage = (url, top, left) => {
@@ -40,10 +46,11 @@
         src: url,
         width: size,
         height: size,
+        alt: `${top}-${left}`
       })
       Object.assign(image.style, {
         position: 'absolute',
-        top: `${(22 - top) * size}px`,
+        top: `${(initial + count - 1 - top) * size}px`,
         left: `${left * size}px`
       })
       document.querySelector('#container').appendChild(image);
@@ -63,7 +70,7 @@
         const objectURL = URL.createObjectURL(blob);
         const alink = document.createElement('a');
         alink.href = objectURL;
-        alink.download = `${22 - top}-${left - 8}`;
+        alink.download = `${initial + count - 1 - top}-${left - initial}`;
         alink.click();
       }
       Object.assign(image, {
@@ -74,7 +81,7 @@
       const image = new Image();
       image.setAttribute('crossorigin', 'anonymous');
       image.onload = () => {
-        ctx.drawImage(image, (left - 8) * size, (22 - top) * size, size, size);
+        ctx.drawImage(image, (left - initial) * size, (initial + count - 1 - top) * size, size, size);
       }
       Object.assign(image, {
         src: url,
@@ -91,20 +98,33 @@
       }
       return new Blob([uint8Array], { type: mime });
     }
+    window.success = [];
+    window.fail = [];
+    const exec = () => {
+      window.fail.forEach(([i, j]) => {
+        axios.get(`https://ditu.hangzhoumap.gov.cn:6443/arcgis/rest/services/KGDK/MapServer/export?bbox=${allX1 + j * step}%2C${allY1 + (i + 1) * step}%2C${allX1 + (j + 1) * step}%2C${allY1 + i * step}&size=${size}%2C${size}&dpi=1&format=png24&transparent=true&bboxSR=3857&imageSR=3857&f=json`).then(({ data }) => {
+          drawImage(data.href, i, j);
+          window.success.push([i, j]);
+        }).catch((error) => {
+          window.fail.push([i, j]);
+        })
+      });
+      window.fail = [];
+    }
+    for (let i = initial; i < initial + count; i++) {
+      for (let j = initial; j < initial + count; j++) {
+        window.fail.push([i, j]);
+      }
+    }
+    exec();
     const save = () => {
+      if (window.fail.length) return exec();
       const blob = dataURLtoBlob(canvas.toDataURL());
       const objectURL = URL.createObjectURL(blob);
       const alink = document.createElement('a');
       alink.href = objectURL;
       alink.download = '杭州控规';
       alink.click();
-    }
-    for (let i = 8; i < 23; i++) {
-      for (let j = 8; j < 23; j++) {
-        axios.get(`https://ditu.hangzhoumap.gov.cn:6443/arcgis/rest/services/KGDK/MapServer/export?bbox=${allX1 + j * step}%2C${allY1 + (i + 1) * step}%2C${allX1 + (j + 1) * step}%2C${allY1 + i * step}&size=${size}%2C${size}&dpi=1&format=png24&transparent=true&bboxSR=3857&imageSR=3857&f=json`).then(({ data }) => {
-          addImage(data.href, i, j)
-        })
-      }
     }
   </script>
 </body>
